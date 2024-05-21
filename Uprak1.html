@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Toko Barang</title>
+   <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+   <style>
+      body {
+         font-family: Arial, sans-serif;
+         background-color: #f8f8f8;
+         color: #333;
+      }
+
+      .container {
+         text-align: center;
+         margin-top: 20px;
+         margin-bottom: 20px;
+      }
+
+      .store-name {
+         font-size: 24px;
+         color: #222425;
+         margin: 10px 0;
+      }
+
+      .store-info {
+         display: flex;
+         justify-content: space-between;
+         align-items: flex-start;
+         flex-wrap: wrap;
+         gap: 10px;
+         margin-bottom: 20px;
+      }
+
+      .store-info p {
+         margin: 5px 0;
+         font-size: 18px;
+         text-align: left;
+      }
+
+      .table-wrapper {
+         border: 2px solid #007bff;
+         border-radius: 10px;
+         padding: 10px;
+         margin: 0 auto;
+         overflow-x: auto;
+         max-width: 80%;
+      }
+
+      .table-container {
+         border: 2px solid #007bff;
+         border-radius: 10px;
+         padding: 10px;
+         margin: 20px auto;
+         overflow-x: auto;
+         max-width: 80%;
+      }
+
+      table {
+         width: 100%;
+         border-collapse: collapse;
+         background-color: #fff;
+         border-radius: 8px;
+         overflow: hidden;
+      }
+
+      th,
+      td {
+         padding: 8px;
+         text-align: left;
+         border-bottom: 1px solid #ddd;
+      }
+
+      th {
+         background-color: #f2f2f2;
+      }
+
+      h1 {
+         color: #007bff;
+         margin: 10px 0;
+      }
+
+      button {
+         background-color: #007bff;
+         color: #fff;
+         border: none;
+         border-radius: 4px;
+         padding: 6px 12px;
+         cursor: pointer;
+         margin: 5px;
+      }
+
+      button:hover {
+         background-color: #0056b3;
+      }
+
+      input[type="number"] {
+         width: 50px;
+         padding: 4px;
+         border: 1px solid #ccc;
+         border-radius: 4px;
+      }
+
+      input[type="number"]:focus {
+         outline: none;
+         border-color: #007bff;
+      }
+
+   </style>
+</head>
+
+<body>
+   <div class="container" id="app">
+      <img src="c:\Users\kompu\Downloads\pngtree-the-online-shop-logo-uses-a-colorful-house-concept-png-image_3096020-removebg-preview.png"
+         alt="Logo Toko" width="100" height="100">
+      <h1 class="store-name">{{ storeName }}</h1>
+      <div class="store-info">
+         <div>
+            <p>Pelanggan: {{ namaPelanggan }}</p>
+            <p>Alamat: {{ alamatPelanggan }}</p>
+            <p>Nomor Telepon: {{ teleponPelanggan }}</p>
+            <p>Email: {{ emailPelanggan }}</p>
+         </div>
+         <div>
+            <p>Tanggal: {{ tanggal }}</p>
+            <p>Kode Barang: {{ kodeBarang }}</p>
+         </div>
+      </div>
+      <div class="table-container">
+         <div class="table-wrapper">
+            <table>
+               <thead>
+                  <tr>
+                     <th>Nama Barang</th>
+                     <th>Harga</th>
+                     <th>Jumlah</th>
+                     <th>Keranjang</th>
+                  </tr>
+               </thead>
+               <tbody>
+                  <tr v-for="(item, index) in items" :key="index">
+                     <td>{{ item.name }}</td>
+                     <td>Rp {{ item.price }}</td>
+                     <td><input type="number" v-model="quantities[index]" min="0"></td>
+                     <td>
+                        <button @click="toggleCart(index)">{{ item.inCart ? 'Hapus dari Keranjang' : 'Tambah ke Keranjang' }}</button>
+                     </td>
+                  </tr>
+               </tbody>
+               <tfoot>
+                  <tr>
+                     <td colspan="3" style="text-align: left;">Total Pembayaran:</td>
+                     <td style="text-align: left;">Rp {{ totalPembayaran }}</td>
+                  </tr>
+                  <tr>
+                     <td colspan="3" style="text-align: left;">Diskon (%):</td>
+                     <td style="text-align: left;"><input type="number" v-model="diskonPercentage" min="0"
+                           max="100"></td>
+                  </tr>
+                  <tr>
+                     <td colspan="3" style="text-align: left;">Diskon:</td>
+                     <td style="text-align: left;">Rp {{ diskon }}</td>
+                  </tr>
+                  <tr>
+                     <td colspan="3" style="text-align: left;">Kembalian:</td>
+                     <td style="text-align: left;">Rp {{ kembalian }}</td>
+                  </tr>
+               </tfoot>
+            </table>
+         </div>
+      </div>
+      <div class="payment-options">
+         <label for="paymentMethod">Metode Pembayaran:</label>
+         <select v-model="paymentMethod" id="paymentMethod">
+            <option value="BCA">BCA</option>
+            <option value="BRI">BRI</option>
+            <option value="BJB">BJB</option>
+            <option value="BNI">BNI</option>
+            <option value="DANA">DANA</option>
+            <option value="OVO">OVO</option>
+            <option value="GoPay">GoPay</option>
+         </select>
+      </div>
+      <button @click="pembayaranEWallet">Bayar dengan E-Wallet</button>
+      <button @click="bayarDitempat">Bayar di Tempat</button>
+      <button @click="selesai">Selesai</button>
+      <button @click="exit">Exit</button>
+   </div>
+
+   <script>
+      new Vue({
+         el: '#app',
+         data: {
+            storeName: 'TOKO BERKAH BANDUNG',
+            namaPelanggan: 'Ihin nih bos',
+            alamatPelanggan: 'Jl.Karawitan No.129',
+            teleponPelanggan: '087735797419',
+            emailPelanggan: 'tokoberkahbdg2024@gmail.com',
+            tanggal: new Date().toLocaleDateString(),
+            kodeBarang: 'Barang666',
+            items: [
+               { name: 'Galon', price: 5000, inCart: false },
+               { name: 'Gas', price: 10000, inCart: false },
+               { name: 'Sandal', price: 12000, inCart: false },
+               { name: 'Krayon-Pensil Warna', price: 7500, inCart: false },
+               { name: 'Spidol', price: 6000, inCart: false }
+            ],
+            quantities: Array(5).fill(0),
+            diskonPercentage: 0,
+            paymentMethod: 'BCA'
+         },
+         methods: {
+            beliBarang(item, quantity) {
+               alert('Anda telah membeli ' + quantity + ' ' + item.name + '(s) seharga Rp ' + (item.price * quantity));
+            },
+            hapusBarang(index) {
+               this.items.splice(index, 1);
+               this.quantities.splice(index, 1);
+            },
+            toggleCart(index) {
+               this.items[index].inCart = !this.items[index].inCart;
+            },
+            selesai() {
+               alert('Transaksi selesai!');
+            },
+            exit() {
+               alert('Anda telah keluar dari program.');
+            },
+            pembayaranEWallet() {
+               alert('Anda memilih untuk membayar dengan ' + this.paymentMethod);
+            },
+            bayarDitempat() {
+               alert('Anda memilih untuk membayar di tempat.');
+            }
+         },
+         computed: {
+            totalPembayaran() {
+               let total = 0;
+               for (let i = 0; i < this.items.length; i++) {
+                  total += this.items[i].price * this.quantities[i];
+               }
+               return total;
+            },
+            diskon() {
+               return (this.totalPembayaran * this.diskonPercentage) / 100;
+            },
+            kembalian() {
+               return this.totalPembayaran - this.diskon;
+            }
+         }
+      })
+   </script>
+</body>
+
+</html>
